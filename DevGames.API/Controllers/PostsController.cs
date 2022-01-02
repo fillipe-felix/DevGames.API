@@ -1,4 +1,6 @@
-﻿using DevGames.API.Entities;
+﻿using AutoMapper;
+
+using DevGames.API.Entities;
 using DevGames.API.Models;
 using DevGames.API.Persistence;
 
@@ -11,10 +13,12 @@ namespace DevGames.API.Controllers;
 public class PostsController : ControllerBase
 {
     private readonly DevGamesContext _context;
+    private readonly IMapper _mapper;
 
-    public PostsController(DevGamesContext context)
+    public PostsController(DevGamesContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -60,7 +64,8 @@ public class PostsController : ControllerBase
             return NotFound();
         }
 
-        var post = new Post(inputModel.Id, inputModel.Title, inputModel.Description);
+        var post = _mapper.Map<Post>(inputModel);
+        //var post = new Post(inputModel.Id, inputModel.Title, inputModel.Description);
         
         board.AddPost(post);
         
@@ -85,7 +90,8 @@ public class PostsController : ControllerBase
             return NotFound();
         }
 
-        var comment = new Comment(inputModel.Title, inputModel.Description, inputModel.User);
+        var comment = _mapper.Map<Comment>(inputModel);
+        //var comment = new Comment(inputModel.Title, inputModel.Description, inputModel.User);
         
         post.AddComment(comment);
         
