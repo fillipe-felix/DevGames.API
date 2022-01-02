@@ -1,4 +1,6 @@
-﻿using DevGames.API.Models;
+﻿using DevGames.API.Entities;
+using DevGames.API.Models;
+using DevGames.API.Persistence;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,29 +10,85 @@ namespace DevGames.API.Controllers;
 [ApiController]
 public class PostsController : ControllerBase
 {
+    private readonly DevGamesContext _context;
+
+    public PostsController(DevGamesContext context)
+    {
+        _context = context;
+    }
 
     [HttpGet]
     public async Task<IActionResult> GetAll(int id)
     {
-        return Ok();
+        var board = _context.Boards.SingleOrDefault(b => b.Id == id);
+
+        if (board is null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(board.Posts);
     }
 
     [HttpGet("{postId}")]
     public async Task<IActionResult> GetById(int id, int postId)
     {
-        return Ok();
+        var board = _context.Boards.SingleOrDefault(b => b.Id == id);
+
+        if (board is null)
+        {
+            return NotFound();
+        }
+
+        var post = board.Posts.SingleOrDefault(p => p.Id == postId);
+
+        if (post is null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(post);
     }
 
     [HttpPost]
     public async Task<IActionResult> Post(int id , [FromBody] AddPostInputModel inputModel)
     {
-        return Created(nameof(GetById), new { id = id, postId = inputModel.Id });
+        var board = _context.Boards.SingleOrDefault(b => b.Id == id);
+
+        if (board is null)
+        {
+            return NotFound();
+        }
+
+        var post = new Post(inputModel.Id, inputModel.Title, inputModel.Description);
+        
+        board.AddPost(post);
+        
+        return CreatedAtAction(nameof(GetById), new { id = id, postId = inputModel.Id }, inputModel);
     }
 
 
     [HttpPost("{postId}/comments")]
     public async Task<IActionResult> PostComment(int id, int postId, [FromBody] AddCommentInputModel inputModel)
     {
+        var board = _context.Boards.SingleOrDefault(b => b.Id == id);
+
+        if (board is null)
+        {
+            return NotFound();
+        }
+
+        var post = board.Posts.SingleOrDefault(p => p.Id == postId);
+
+        if (post is null)
+        {
+            return NotFound();
+        }
+
+        var comment = new Comment(inputModel.Title, inputModel.Description, inputModel.User);
+        
+        post.AddComment(comment);
+        
         return NoContent();
     }
 }
