@@ -2,12 +2,11 @@
 
 public class Comment
 {
-    public Comment(string title, string description, string user, int postId)
+    public Comment(string title, string description, string user)
     {
         Title = title;
         Description = description;
         User = user;
-        PostId = postId;
 
         CreatedAt = DateTime.Now;
     }
@@ -18,4 +17,9 @@ public class Comment
     public string User { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public int PostId { get; private set; }
+
+    public void SetPostId(int postId)
+    {
+        PostId = postId;
+    }
 }

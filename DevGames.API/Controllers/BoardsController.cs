@@ -5,6 +5,7 @@ using DevGames.API.Models;
 using DevGames.API.Persistence;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DevGames.API.Controllers;
 
@@ -22,7 +23,7 @@ public class BoardsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public IActionResult GetAll()
     {
         return Ok(_context.Boards);
     }
@@ -30,7 +31,7 @@ public class BoardsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var board = _context.Boards.SingleOrDefault(b => b.Id == id);
+        var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == id);
 
         if (board is null)
         {
@@ -47,6 +48,7 @@ public class BoardsController : ControllerBase
         //var board = new Board(inputModel.id, inputModel.GameTitle, inputModel.Description, inputModel.Rules);
 
         _context.Boards.Add(board);
+        await _context.SaveChangesAsync();
         
         return CreatedAtAction(nameof(GetById), new { id = board.Id }, inputModel);
     }
@@ -62,6 +64,7 @@ public class BoardsController : ControllerBase
         }
         
         board.Update(inputModel.Description, inputModel.Rules);
+        await _context.SaveChangesAsync();
         
         return NoContent();
     }
