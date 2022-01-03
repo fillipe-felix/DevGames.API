@@ -6,6 +6,8 @@ using DevGames.API.Persistence.Repositories;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Serilog;
+
 namespace DevGames.API.Controllers;
 
 [Route("api/[controller]")]
@@ -31,6 +33,9 @@ public class BoardsController : ControllerBase
     public async Task<IActionResult> GetAllAsync()
     {
         var boards = await _boardRepository.GetAllAsync();
+        
+        Log.Information($"{boards.Count()} boads retrieved.");
+        
         return Ok(boards);
     }
 

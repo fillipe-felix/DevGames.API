@@ -7,7 +7,25 @@ using DevGames.API.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
+using Serilog;
+using Serilog.Sinks.MSSqlServer;
+
 var builder = WebApplication.CreateBuilder(args);
+
+//Realiza a configuração do Serilog com o SQlServer
+builder.Host.ConfigureAppConfiguration((hostingContext, config) =>
+{
+    var settings = config.Build();
+    Serilog.Log.Logger = new LoggerConfiguration()
+        .Enrich.FromLogContext()
+        .WriteTo.MSSqlServer(settings.GetConnectionString("DevGamesCs"),
+            sinkOptions: new MSSqlServerSinkOptions
+            {
+                AutoCreateSqlTable = true,
+                TableName = "Logs"
+            })
+        .CreateLogger();
+}).UseSerilog();
 
 // Add services to the container.
 
