@@ -47,7 +47,7 @@ public class BoardsController : ControllerBase
         var board = _mapper.Map<Board>(inputModel);
         //var board = new Board(inputModel.id, inputModel.GameTitle, inputModel.Description, inputModel.Rules);
 
-        _context.Boards.Add(board);
+        await _context.Boards.AddAsync(board);
         await _context.SaveChangesAsync();
         
         return CreatedAtAction(nameof(GetById), new { id = board.Id }, inputModel);
@@ -56,7 +56,7 @@ public class BoardsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Put(int id, [FromBody] UpdateBoardInputModel inputModel)
     {
-        var board = _context.Boards.SingleOrDefault(b => b.Id == id);
+        var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == id);
 
         if (board is null)
         {

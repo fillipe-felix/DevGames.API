@@ -58,7 +58,7 @@ public class PostsController : ControllerBase
         post.SetBoardId(id);
         //var post = new Post(inputModel.Title, inputModel.Description, id, inputModel.User);
 
-        _context.Posts.Add(post);
+        await _context.Posts.AddAsync(post);
         
         await _context.SaveChangesAsync();
         
@@ -80,7 +80,7 @@ public class PostsController : ControllerBase
         comment.SetPostId(postId);
         //var comment = new Comment(inputModel.Title, inputModel.Description, inputModel.User);
         
-        _context.Comments.Add(comment);
+        await _context.Comments.AddAsync(comment);
         await _context.SaveChangesAsync();
         
         return NoContent();
