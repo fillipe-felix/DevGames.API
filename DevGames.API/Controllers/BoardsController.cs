@@ -48,7 +48,7 @@ public class BoardsController : ControllerBase
 
         _context.Boards.Add(board);
         
-        return CreatedAtAction(nameof(GetById), new { id = inputModel.id }, inputModel);
+        return CreatedAtAction(nameof(GetById), new { id = board.Id }, inputModel);
     }
 
     [HttpPut("{id}")]

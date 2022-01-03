@@ -69,7 +69,7 @@ public class PostsController : ControllerBase
         
         board.AddPost(post);
         
-        return CreatedAtAction(nameof(GetById), new { id = id, postId = inputModel.Id }, inputModel);
+        return CreatedAtAction(nameof(GetById), new { id = id, postId = post.Id }, inputModel);
     }
 
 
