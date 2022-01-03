@@ -1,12 +1,17 @@
 using DevGames.API.Mappers;
 using DevGames.API.Persistence;
 
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddSingleton<DevGamesContext>();
 builder.Services.AddAutoMapper(typeof(BoardMapper));
+
+var connectionString = builder.Configuration.GetConnectionString("DevGamesCs");
+
+builder.Services.AddDbContext<DevGamesContext>(o => o.UseSqlServer(connectionString));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
