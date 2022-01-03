@@ -2,10 +2,9 @@
 
 using DevGames.API.Entities;
 using DevGames.API.Models;
-using DevGames.API.Persistence;
+using DevGames.API.Persistence.Repositories;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DevGames.API.Controllers;
 
@@ -13,19 +12,19 @@ namespace DevGames.API.Controllers;
 [ApiController]
 public class PostsController : ControllerBase
 {
-    private readonly DevGamesContext _context;
+    private readonly IPostRepository _postRepository;
     private readonly IMapper _mapper;
 
-    public PostsController(DevGamesContext context, IMapper mapper)
+    public PostsController( IMapper mapper, IPostRepository postRepository)
     {
-        _context = context;
         _mapper = mapper;
+        _postRepository = postRepository;
     }
 
     [HttpGet]
-    public IActionResult GetAll(int id)
+    public async Task<IActionResult> GetAllAsync(int id)
     {
-        var posts = _context.Posts.Where(p => p.BoardId == id);
+        var posts = await _postRepository.GetAllByBoardAsync(id);
 
         if (posts is null)
         {
@@ -38,10 +37,7 @@ public class PostsController : ControllerBase
     [HttpGet("{postId}")]
     public async Task<IActionResult> GetById(int id, int postId)
     {
-        var post = await _context
-            .Posts
-            .Include(p => p.Comments)
-            .SingleOrDefaultAsync(p => p.Id == postId);
+        var post = await _postRepository.GetPostByIdAsync(postId);
         
         if (post is null)
         {
@@ -52,26 +48,24 @@ public class PostsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post(int id , [FromBody] AddPostInputModel inputModel)
+    public async Task<IActionResult> PostAsync(int id , [FromBody] AddPostInputModel inputModel)
     {
         var post = _mapper.Map<Post>(inputModel);
         post.SetBoardId(id);
         //var post = new Post(inputModel.Title, inputModel.Description, id, inputModel.User);
 
-        await _context.Posts.AddAsync(post);
-        
-        await _context.SaveChangesAsync();
+        await _postRepository.AddAsync(post);
         
         return CreatedAtAction(nameof(GetById), new { id = id, postId = post.Id }, post);
     }
 
 
     [HttpPost("{postId}/comments")]
-    public async Task<IActionResult> PostComment(int id, int postId, [FromBody] AddCommentInputModel inputModel)
+    public async Task<IActionResult> PostCommentAsync(int id, int postId, [FromBody] AddCommentInputModel inputModel)
     {
-        var postExists = await _context.Posts.AnyAsync(p => p.Id == postId);
+        var postExists = await _postRepository.GetPostByIdAsync(postId);
 
-        if (!postExists)
+        if (postExists == null)
         {
             return NotFound();
         }
@@ -79,9 +73,8 @@ public class PostsController : ControllerBase
         var comment = _mapper.Map<Comment>(inputModel);
         comment.SetPostId(postId);
         //var comment = new Comment(inputModel.Title, inputModel.Description, inputModel.User);
-        
-        await _context.Comments.AddAsync(comment);
-        await _context.SaveChangesAsync();
+
+        await _postRepository.AddCommentAsync(comment);
         
         return NoContent();
     }

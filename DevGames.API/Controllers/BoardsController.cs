@@ -2,10 +2,9 @@
 
 using DevGames.API.Entities;
 using DevGames.API.Models;
-using DevGames.API.Persistence;
+using DevGames.API.Persistence.Repositories;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DevGames.API.Controllers;
 
@@ -13,25 +12,26 @@ namespace DevGames.API.Controllers;
 [ApiController]
 public class BoardsController : ControllerBase
 {
-    private readonly DevGamesContext _context;
+    private readonly IBoardRepository _boardRepository;
     private readonly IMapper _mapper;
 
-    public BoardsController(DevGamesContext context, IMapper mapper)
+    public BoardsController(IMapper mapper, IBoardRepository boardRepository)
     {
-        _context = context;
         _mapper = mapper;
+        _boardRepository = boardRepository;
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAllAsync()
     {
-        return Ok(_context.Boards);
+        var boards = await _boardRepository.GetAllAsync();
+        return Ok(boards);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == id);
+        var board = await _boardRepository.GetBoardByIdAsync(id);
 
         if (board is null)
         {
@@ -42,29 +42,27 @@ public class BoardsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] AddBoardInputModel inputModel)
+    public async Task<IActionResult> PostAsync([FromBody] AddBoardInputModel inputModel)
     {
         var board = _mapper.Map<Board>(inputModel);
         //var board = new Board(inputModel.id, inputModel.GameTitle, inputModel.Description, inputModel.Rules);
 
-        await _context.Boards.AddAsync(board);
-        await _context.SaveChangesAsync();
+        await _boardRepository.AddAsync(board);
         
         return CreatedAtAction(nameof(GetById), new { id = board.Id }, inputModel);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Put(int id, [FromBody] UpdateBoardInputModel inputModel)
+    public async Task<IActionResult> PutAsync(int id, [FromBody] UpdateBoardInputModel inputModel)
     {
-        var board = await _context.Boards.SingleOrDefaultAsync(b => b.Id == id);
+        var board = await _boardRepository.GetBoardByIdAsync(id);
 
         if (board is null)
         {
             return NotFound();
         }
-        
         board.Update(inputModel.Description, inputModel.Rules);
-        await _context.SaveChangesAsync();
+        await _boardRepository.UpdateAsync(board);
         
         return NoContent();
     }
