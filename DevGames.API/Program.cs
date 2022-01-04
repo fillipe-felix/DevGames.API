@@ -33,7 +33,9 @@ builder.Services.AddAutoMapper(typeof(BoardMapper));
 
 var connectionString = builder.Configuration.GetConnectionString("DevGamesCs");
 
-builder.Services.AddDbContext<DevGamesContext>(o => o.UseSqlServer(connectionString));
+//builder.Services.AddDbContext<DevGamesContext>(o => o.UseSqlServer(connectionString));
+builder.Services.AddDbContext<DevGamesContext>(o => o.UseInMemoryDatabase(connectionString));
+
 builder.Services.AddScoped<IBoardRepository, BoardRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 
